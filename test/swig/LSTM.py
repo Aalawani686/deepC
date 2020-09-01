@@ -31,10 +31,10 @@ class LSTMTest(unittest.TestCase):
 
     def setUp(self):
         self.num_directions = 1
-        self.seq_length = 3
-        self.batch_size = 3
-        self.input_size = 4
-        self.hidden_size = 3
+        self.seq_length = 7
+        self.batch_size = 6
+        self.input_size = 8
+        self.hidden_size = 18
 
         self.np_x = np.random.randn(self.seq_length * self.batch_size * self.input_size).astype(np.float32)
         self.dc_x = dc.array(list(self.np_x))

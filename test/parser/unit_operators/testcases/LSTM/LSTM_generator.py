@@ -32,14 +32,13 @@ sys.path.append(".."+separator+".."+separator+".."+separator+".."+separator+"pyt
 
 op_name = 'LSTM'
 
-seq_length = 3
-batch_size = 3
-input_size = 4
-hidden_size = 3
+seq_length = 7
+batch_size = 6
+input_size = 8
+hidden_size = 18
 num_directions = 1
 weight_scale = 0.1
 number_of_gates = 4
-number_of_peepholes = 3
 number_of_peepholes = 3
 
 inputs = [helper.make_tensor_value_info('X',TensorProto.FLOAT,[seq_length, batch_size, input_size]),
@@ -52,9 +51,11 @@ inputs = [helper.make_tensor_value_info('X',TensorProto.FLOAT,[seq_length, batch
     helper.make_tensor_value_info('P',TensorProto.FLOAT,[num_directions, number_of_peepholes*hidden_size])]
 
 
-outputs = [helper.make_tensor_value_info('Y',TensorProto.FLOAT,[seq_length, num_directions, batch_size, hidden_size])]
+outputs = [helper.make_tensor_value_info('Y', TensorProto.FLOAT,[seq_length, num_directions, batch_size, hidden_size]),
+            helper.make_tensor_value_info('Y_h', TensorProto.FLOAT,[num_directions, batch_size, hidden_size]),
+            helper.make_tensor_value_info('Y_c', TensorProto.FLOAT,[num_directions, batch_size, hidden_size])]
 nodes = []
-nodes.append(helper.make_node('LSTM',inputs=['X', 'W', 'R', 'B', 'sequence_lens', 'initial_h', 'initial_c', 'P'], outputs=['', 'Y'], activations=["sigmoid","tanh","tanh"], direction="forward", hidden_size=3))
+nodes.append(helper.make_node('LSTM',inputs=['X', 'W', 'R', 'B', 'sequence_lens', 'initial_h', 'initial_c', 'P'], outputs=['Y', 'Y_h', 'Y_c'], activations=["tanh","relu","sigmoid"], direction="forward", hidden_size=18))
 
 graph = helper.make_graph(nodes, op_name+"_graph", inputs, outputs)
 opset = (OperatorSetIdProto(version=11),)

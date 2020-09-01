@@ -123,8 +123,8 @@ public:
           supported_activations.end()) {
         errMsg << activation << " is not a supported activation funtion"
                << std::endl;
-      }
-      SPDLOG_ERROR(errMsg.str().c_str());
+        SPDLOG_ERROR(errMsg.str().c_str());
+      }      
     }
     this->activations = activations;
 
@@ -250,6 +250,11 @@ public:
   }
 
   static Ti1 sigmoid_func(Ti1 x) { return (1 / (1 + exp(-x))); }
+  static Ti1 relu_func(Ti1 x) { 
+    Ti1 zero = 0;
+    return x < zero ? zero : x;
+  }
+  static Ti1 tanh_func(Ti1 x) { return tanh(x); }
 
   //
   // The compute funtion returns vector with 3 optional tensor outputs
@@ -318,7 +323,28 @@ public:
     std::vector<tensor<To>> retVal;
 
     if (X.rank() != 3 || W.rank() != 3) {
-      std::cout << "Dimension Error" << std::endl;
+      SPDLOG_ERROR("Dimension Error");
+      return retVal;
+    }
+
+    std::vector<Ti1 (*)(Ti1 x)> functions;
+
+    if (activations.size() == 0) {
+       functions.push_back(&sigmoid_func);
+       functions.push_back(&tanh_func);
+       functions.push_back(&tanh_func);
+    } else {
+      for (std::string activation : activations) {
+        if (activation.compare("Relu") == 0) {
+          functions.push_back(&relu_func);
+        } else if (activation.compare("Tanh") == 0) {
+          functions.push_back(&tanh_func);
+        } else if (activation.compare("Sigmoid") == 0) {
+          functions.push_back(&sigmoid_func);
+        } else {
+          functions.push_back(&sigmoid_func);
+        }
+      }
     }
 
     int batch = X.shape()[1];
@@ -405,9 +431,9 @@ public:
         Xf.array() +=
             (mat_Ct.array().rowwise() * mat_Pt.rightCols(hidden).array());
 
-        Xi = Xi.unaryExpr(&sigmoid_func);
-        Xf = Xf.unaryExpr(&sigmoid_func);
-        Xc.array() = tanh(Xc.array());
+        Xi = Xi.unaryExpr(functions[0]);
+        Xf = Xf.unaryExpr(functions[0]);
+        Xc = Xc.unaryExpr(functions[1]);
 
         mat_Ct.array() =
             (mat_Ct.array() * Xf.array() + Xi.array() * Xc.array());
@@ -415,9 +441,9 @@ public:
         Xo.array() += (mat_Ct.array().rowwise() *
                        mat_Pt.middleCols(P.shape()[1] / 3, hidden).array());
 
-        Xo = Xo.unaryExpr(&sigmoid_func);
-        mat_Ht.array() = (Xo.array() * tanh(mat_Ct.array()));
-
+        Xo = Xo.unaryExpr(functions[0]);
+        mat_Ht.array() = (Xo.array() * mat_Ct.unaryExpr(functions[2]).array());
+        
         tensor<To> ret({Y.shape()[1], W.shape()[1] / 4});
         ret.load(mat_Ht.data());
         retVal.push_back(ret);
