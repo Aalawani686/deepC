@@ -8,7 +8,7 @@
 	initial_h
 	initial_c
 PYY_hY_c"LSTM*%
-activationsJtanhJreluJsigmoid *
+activationsJsigmoidJtanhJtanh *
 	direction"forward *
 hidden_size 
 LSTM_graphZ

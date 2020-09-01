@@ -54,17 +54,17 @@ int main() {
   tensor<float> R({1, 12, 3});
   tensor<float> B({1, 24});
 
-  tensor<float> H({1, 2, 2});
-  tensor<float> C({1, 2, 2});
-  tensor<float> P({1, 6});
+  // tensor<float> H({1, 2, 2});
+  // tensor<float> C({1, 2, 2});
+  // tensor<float> P({1, 6});
 
   X.load(t1);
   W.load(t2);
   R.load(t3);
   B.load(t4);
-  H.load(d1);
-  C.load(d1);
-  P.load(d2);
+  // H.load(d1);
+  // C.load(d1);
+  // P.load(d2);
 
   LSTM<float, float, int> m("localOpName");
 

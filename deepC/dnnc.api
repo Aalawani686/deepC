@@ -886,7 +886,9 @@ std::vector<tensor<output>> lstm(tensor<input> &x, tensor<input> &w, tensor<inpu
 		tensor<input> &b=NULL_TENSOR<input>, tensor<input> &lens=NULL_TENSOR<input>, 
 		tensor<input> &h=NULL_TENSOR<input>, tensor<input> &c=NULL_TENSOR<input>,
 		tensor<input> &p=NULL_TENSOR<input>) {
-	LSTM<output, input, input> op;
+	LSTM<output, input, input> op("localOpName");
+	//float val = 0.001;
+	//op.setAttribute(attr_clip, val);
 	return op.compute(x, w, r, b, lens, h, c, p);
 	dtype = {
 		"double" : "double",

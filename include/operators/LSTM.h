@@ -58,7 +58,7 @@ protected:
   // A list of 3 (or 6 if bidirectional) activation functions for input, output,
   // forget, cell, and hidden.
 
-  float clip;
+  Ti1 clip;
   // Cell clip threshold. Clipping bounds the elements of a tensor in the range
   // of [-threshold, +threshold] and is applied to the input of activations. No
   // clip if not specified.
@@ -249,12 +249,40 @@ public:
     return false;
   }
 
-  static Ti1 sigmoid_func(Ti1 x) { return (1 / (1 + exp(-x))); }
+  static Ti1 sigmoid_func(Ti1 x) { 
+    // if (clip != 0) {
+    //   x = std::max(std::min(x, abs(clip)), -abs(x)); 
+    // }
+    return (1 / (1 + exp(-x)));
+  }
   static Ti1 relu_func(Ti1 x) { 
+    // if (clip != 0) {
+    //   x = std::max(std::min(x, abs(clip)), -abs(x)); 
+    // }
     Ti1 zero = 0;
     return x < zero ? zero : x;
   }
-  static Ti1 tanh_func(Ti1 x) { return tanh(x); }
+  static Ti1 tanh_func(Ti1 x) { 
+    // if (clip != 0) {
+    //   x = std::max(std::min(x, abs(clip)), -abs(x));
+    // }
+    return tanh(x); 
+  }
+
+  DNNC_EIGEN_MATRIX_CTOR(Ti1) clipper(DNNC_EIGEN_MATRIX_CTOR(Ti1) mat) {
+    if (clip != 0) {
+      for (size_t i = 0, nRows = mat.rows(), nCols = mat.cols(); i < nRows; ++i) {
+        for (size_t j = 0; j < nCols; ++j) {
+          Ti1 val = mat(i, j);
+          mat(i, j) = std::max(std::min(mat(i, j), abs(clip)), -abs(clip));
+          if (val != mat(i, j)) {
+            std::cout << mat(i, j) << " " << val << std::endl;
+          }
+        }
+      }
+    }
+    return mat;
+  }
 
   //
   // The compute funtion returns vector with 3 optional tensor outputs
@@ -430,6 +458,10 @@ public:
             (mat_Ct.array().rowwise() * mat_Pt.leftCols(hidden).array());
         Xf.array() +=
             (mat_Ct.array().rowwise() * mat_Pt.rightCols(hidden).array());
+        
+        // Xi = clipper(Xi);
+        // Xf = clipper(Xf);
+        // Xc = clipper(Xc);
 
         Xi = Xi.unaryExpr(functions[0]);
         Xf = Xf.unaryExpr(functions[0]);
@@ -440,6 +472,9 @@ public:
 
         Xo.array() += (mat_Ct.array().rowwise() *
                        mat_Pt.middleCols(P.shape()[1] / 3, hidden).array());
+
+        // Xo = clipper(Xo);
+        // mat_Ct = clipper(mat_Ct);
 
         Xo = Xo.unaryExpr(functions[0]);
         mat_Ht.array() = (Xo.array() * mat_Ct.unaryExpr(functions[2]).array());

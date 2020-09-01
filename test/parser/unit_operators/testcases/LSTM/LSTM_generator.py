@@ -55,7 +55,7 @@ outputs = [helper.make_tensor_value_info('Y', TensorProto.FLOAT,[seq_length, num
             helper.make_tensor_value_info('Y_h', TensorProto.FLOAT,[num_directions, batch_size, hidden_size]),
             helper.make_tensor_value_info('Y_c', TensorProto.FLOAT,[num_directions, batch_size, hidden_size])]
 nodes = []
-nodes.append(helper.make_node('LSTM',inputs=['X', 'W', 'R', 'B', 'sequence_lens', 'initial_h', 'initial_c', 'P'], outputs=['Y', 'Y_h', 'Y_c'], activations=["tanh","relu","sigmoid"], direction="forward", hidden_size=18))
+nodes.append(helper.make_node('LSTM',inputs=['X', 'W', 'R', 'B', 'sequence_lens', 'initial_h', 'initial_c', 'P'], outputs=['Y', 'Y_h', 'Y_c'], activations=["sigmoid","tanh","tanh"], direction="forward", hidden_size=18))
 
 graph = helper.make_graph(nodes, op_name+"_graph", inputs, outputs)
 opset = (OperatorSetIdProto(version=11),)
